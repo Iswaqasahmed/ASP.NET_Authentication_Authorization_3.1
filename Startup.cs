@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Threading.Tasks;
 using System.Security.Claims;
 using System.Linq;
+using Microsoft.AspNetCore.Authentication.Google;
 
 namespace ASP_NET_Core_3
 {
@@ -19,14 +20,16 @@ namespace ASP_NET_Core_3
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+        //This method gets called by the runtime.Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(
                 options =>
                 {
-                options.LoginPath = "/Login";
+                    options.LoginPath = "/Login";
+                    options.AccessDeniedPath = "/Denied";
+
                     options.Events = new CookieAuthenticationEvents()
                     {
                         OnSignedIn = async context =>
@@ -45,24 +48,51 @@ namespace ASP_NET_Core_3
                             //context.HttpContext.Response.Redirect("/");
                             //return Task.CompletedTask;
                         },
-
                         OnSigningIn = async context => { await Task.CompletedTask; },
                         OnValidatePrincipal = async context => { await Task.CompletedTask; }
 
-                         //OnRedirectToLogin = context =>
-                        //{
-                        //    if (context.Request.Path.StartsWithSegments("/api") &&
-                        //        context.Response.StatusCode == 200)
-                        //    {
-                        //        context.Response.StatusCode = 401;
-                        //    }
-                        //    return Task.CompletedTask;
-                        //}
+                        #region comment
+                        //OnRedirectToLogin = context =>
+                        //   {
+                        //       if (context.Request.Path.StartsWithSegments("/api") &&
+                        //           context.Response.StatusCode == 200)
+                        //       {
+                        //           context.Response.StatusCode = 401;
+                        //       }
+                        //       return Task.CompletedTask;
+                        //   }
+                        #endregion
                     };
                 });
         }
 
+
+
+
+
+
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+
+
+        //public void ConfigureServices(IServiceCollection services)
+        //{
+        //    services.AddControllersWithViews();
+        //    services.AddAuthentication(options => {
+        //        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        //        options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+        //    }).AddCookie(options =>
+        //    { 
+        //            options.LoginPath = "/login";
+        //    options.AccessDeniedPath = "/denied";
+        //     }).AddGoogle(options =>
+        //     {
+        //         options.ClientId = "258627838171-8ui3u1rirter67kgioes1unafl4j18vo.apps.googleusercontent.com";
+        //         options.ClientSecret = "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";
+        //         options.CallbackPath = "/auth";
+        //      });
+        //}
+
+
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -82,9 +112,10 @@ namespace ASP_NET_Core_3
 
             // must added to pipe-line before UseAuthentication()
             app.UseAuthentication();
+
             app.UseAuthorization();
-            
-            
+
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
